@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Mini Uploader</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 560px;
+            margin: 40px auto;
+        }
+
+        .box {
+            border: 1px dashed #bbb;
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        #links a {
+            display: block;
+            margin: 6px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Upload file ra ngoài</h1>
+    <div class="box">
+        <input id="file" type="file" multiple />
+        <button id="btn">Upload</button>
+        <div id="status"></div>
+        <div id="links"></div>
+    </div>
+
+    <script type="module">
+        async function getToken() {
+            const res = await fetch('/api/blob-token', { method: 'POST' });
+            const { token } = await res.json();
+            return token;
+        }
+
+        document.getElementById('btn').onclick = async () => {
+            const input = document.getElementById('file');
+            const status = document.getElementById('status');
+            const links = document.getElementById('links');
+            links.innerHTML = '';
+            if (!input.files.length) { alert('Chọn file'); return; }
+
+            status.textContent = 'Đang xin token…';
+            const token = await getToken();
+
+            // Upload tuần tự cho đơn giản; có thể Promise.all nếu muốn song song
+            for (const file of input.files) {
+                status.textContent = `Đang upload: ${file.name}…`;
+
+                // Gửi trực tiếp lên Vercel Blob bằng token
+                const uploadUrl = `https://blob.vercel-storage.com/upload?token=${encodeURIComponent(token)}`;
+                const form = new FormData();
+                form.append('file', file);
+                const up = await fetch(uploadUrl, { method: 'POST', body: form });
+                if (!up.ok) { status.textContent = 'Upload lỗi'; break; }
+
+                const info = await up.json(); // { url, pathname, ... }
+                const a = document.createElement('a');
+                a.href = info.url; a.textContent = `Tải: ${info.url}`;
+                a.target = '_blank'; links.appendChild(a);
+            }
+            status.textContent = 'Xong.';
+        };
+    </script>
+</body>
+
+</html>

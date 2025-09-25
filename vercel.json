@@ -1,0 +1,6 @@
+{
+  "functions": { "api/blob-token.js": { "runtime": "nodejs20.x" } },
+  "routes": [
+    { "src": "/api/blob-token", "dest": "/api/blob-token.js" }
+  ]
+}
