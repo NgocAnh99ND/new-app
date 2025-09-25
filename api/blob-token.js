@@ -1,17 +1,26 @@
-// api/blob-token.js
-import { createUploadToken } from '@vercel/blob';
+const { createUploadToken } = require('@vercel/blob');
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Tùy chọn bảo mật/giới hạn
-  const { token } = await createUploadToken({
-    // 'public' => có URL tải trực tiếp; 'private' => cần lớp truy cập riêng
-    // Với nhu cầu chia sẻ link tải, dùng 'public' hoặc 'unauthenticated' (unguessable)
-    access: 'public',
-    // Chỉ cho một lần upload / giới hạn kích thước, MIME (nếu muốn)
-    // maxSize: 1024 * 1024 * 1024, // ví dụ 1GB
-  });
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-  res.status(200).json({ token });
-}
+  if (req.method !== 'POST') {
+    return res.status(405).end();
+  }
+
+  try {
+    const { token } = await createUploadToken({
+      access: 'public',
+    });
+
+    res.status(200).json({ token });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'createUploadToken failed', detail: err.message });
+  }
+};
