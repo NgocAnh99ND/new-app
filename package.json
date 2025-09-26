@@ -5,7 +5,5 @@
   "engines": {
     "node": ">=20"
   },
-  "dependencies": {
-    "@vercel/blob": "^0.20.0"
-  }
+  "dependencies": {}
 }
