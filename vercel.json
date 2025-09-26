@@ -1,5 +1,0 @@
-{
-  "routes": [
-    { "src": "/api/blob-token", "dest": "/api/blob-token.js" }
-  ]
-}
